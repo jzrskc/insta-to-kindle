@@ -38,10 +38,23 @@ The newest `.csv` file in `input/` is picked up automatically if no path is give
 3. The EPUB is written to `output/instapaper-YYYY-MM-DD.epub`
 4. If email is configured, it is sent automatically; otherwise upload it manually via [Send to Kindle](https://www.amazon.com/sendtokindle)
 
+### Markdown export (optional)
+
+Add the `--md` flag to also export each article as an individual Markdown file:
+
+```bash
+npm start --md
+# or with a specific CSV file
+npx tsx src/index.ts --md path/to/export.csv
+```
+
+Markdown files are saved to `output/md/`, one file per article, named after the article title. Markdown files are **not** emailed.
+
 ## How it works
 
 1. **CSV parsing** — reads the Instapaper export and filters out the `Archive`, `Financije`, and `Crypto` folders
 2. **Article fetching** — downloads each URL and extracts clean article content using Mozilla Readability (the same engine as Firefox Reader View)
 3. **Cover generation** — creates a cover image (1200 × 1800 px) showing the date and article count using Sharp
 4. **EPUB generation** — packages all articles into a single `.epub` with the generated cover and a table of contents
-5. **Email delivery** — if `SENDER_EMAIL`, `SENDER_PASSWORD`, and `RECIPIENT_EMAIL` are set in `.env`, sends the EPUB via Gmail using Nodemailer
+5. **Markdown export** *(optional, `--md`)* — converts each article's HTML to Markdown via Turndown and writes individual `.md` files to `output/md/`
+6. **Email delivery** — if `SENDER_EMAIL`, `SENDER_PASSWORD`, and `RECIPIENT_EMAIL` are set in `.env`, sends the EPUB via Gmail using Nodemailer (Markdown files are not sent)

@@ -5,6 +5,7 @@ import { readCsv } from "./csv-reader.js";
 import { fetchArticles } from "./article-fetcher.js";
 import { buildEpub } from "./epub-builder.js";
 import { sendEpubByEmail } from "./email-sender.js";
+import { writeArticlesAsMarkdown } from "./markdown-writer.js";
 
 /**
  * Find the most recent .csv file in the input/ directory.
@@ -23,10 +24,15 @@ function findCsvInInputDir(): string | null {
 }
 
 async function main(): Promise<void> {
+  // Parse flags
+  const args = process.argv.slice(2);
+  const exportMd = args.includes("--md") || process.env.npm_config_md === "true";
+  const positionalArgs = args.filter((a) => !a.startsWith("--"));
+
   let csvPath: string;
 
-  if (process.argv[2]) {
-    csvPath = resolve(process.argv[2]);
+  if (positionalArgs[0]) {
+    csvPath = resolve(positionalArgs[0]);
   } else {
     const found = findCsvInInputDir();
     if (!found) {
@@ -70,7 +76,12 @@ async function main(): Promise<void> {
 
   console.log(`\n🎉 Done! EPUB saved to: ${outputPath}`);
 
-  // 5. Send via email
+  // 5. Optionally export individual Markdown files
+  if (exportMd) {
+    writeArticlesAsMarkdown(articles, outputDir);
+  }
+
+  // 6. Send EPUB via email (Markdown files stay local)
   await sendEpubByEmail(outputPath);
 }
 
